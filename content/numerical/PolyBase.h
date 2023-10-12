@@ -36,7 +36,11 @@ poly &operator*=(poly &a, const poly &b) {
 }
 poly operator*(poly a, const num b) {
 	poly c = a;
+<<<<<<< HEAD
 	for(auto& i : c) i = i * b;
+=======
+	trav(i, c) i = i * b;
+>>>>>>> 5063a41 (First commit)
 	return c;
 }
 #define OP(o, oe) \
