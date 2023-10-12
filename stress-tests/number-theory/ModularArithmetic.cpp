@@ -7,12 +7,12 @@ int main() {
 		Mod ma(a);
 		Mod mb(b);
 		Mod mc = ma / mb;
-		assert((mc * mb).x == a);
+		assert((mc * mb).v == a);
 	}
 	Mod a = 2;
 	ll cur=1;
 	rep(i, 0, 17) {
-		assert((a ^ i).x == cur);
+		assert((a ^ i).v == cur);
 		cur = (cur * 2) % mod;
 		// cout << i << ": " << (a ^ i).x << endl;
 	}
