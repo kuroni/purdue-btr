@@ -3,9 +3,13 @@
  * Date: 2019-04-27
  * Description: Calculate $\frac{da}{dx}$ and $\int a \, dx$.
 <<<<<<< HEAD
+<<<<<<< HEAD
  * Time: O(|a|)
 =======
 >>>>>>> 5063a41 (First commit)
+=======
+ * Time: O(|a|)
+>>>>>>> 9bcad7b (Added BostanMori and MinkowskiSum + various changes)
  */
 #pragma once
 #include "PolyBase.h"
