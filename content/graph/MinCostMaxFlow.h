@@ -23,11 +23,11 @@ struct MCMF {
 	vector<edge> edges;
  
 	VL pi, dist;
-	vi prv;
+	vi prv, vis;
 	__gnu_pbds::priority_queue<pair<ll, int>> q;
 	vector<typename decltype(q)::point_iterator> its;
  
-	MCMF(int N) : N(N), adj(N), pi(N, 0), prv(N) {}
+	MCMF(int N) : N(N), adj(N), pi(N, 0), prv(N), vis(N) {}
  
 	void addEdge(int from, int to, ll cap, ll cost) {
 		int e = int(edges.size());
@@ -86,6 +86,32 @@ struct MCMF {
 		}
 		return {totFlow, totCost};
 	}
+
+/*
+	// SPFA if the graph is dense
+	void path(int s) {
+		dist.assign(N, INF); dist[s] = 0;
+		queue<int> q;
+		for (q.push(s); !q.empty(); q.pop()) {
+			int i = q.front(); vis[i] = 0;
+			ll d = dist[i];
+			for (int e : adj[i]) {
+				if (edges[e].cap) {
+					int j = edges[e].dest;
+					ll nd = d + edges[e].cost;
+					if (nd < dist[j]) {
+						dist[j] = nd;
+						prv[j] = e;
+						if (!vis[j]) {
+							vis[j] = 1; q.push(j);
+						}
+					}
+				}
+			}
+		}
+		swap(pi, dist);
+	}
+*/
 
 	// If some costs can be negative, call this before maxflow:
 	void setpi(int s) { // (otherwise, leave this out)

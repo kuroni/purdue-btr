@@ -36,7 +36,7 @@ poly &operator*=(poly &a, const poly &b) {
 }
 poly operator*(poly a, const num b) {
 	poly c = a;
-	trav(i, c) i = i * b;
+	for(auto& i : c) i = i * b;
 	return c;
 }
 #define OP(o, oe) \
