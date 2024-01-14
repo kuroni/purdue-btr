@@ -1,117 +1,81 @@
 /**
- * Author: Andrew He
+ * Author: Stanford
  * Date: Unknown
- * Source: https://codeforces.com/contest/1178/submission/57573815
+ * Source: Stanford Notebook
  * Description: Min-cost max-flow.
+ *  If costs can be negative, call setpi before maxflow, but note that negative cost cycles are not supported.
+ *  To obtain the actual flow, look at positive values only.
  * Status: Tested on kattis:mincostmaxflow, stress-tested against another implementation
- * Time: Approximately O(E^2)
+ * Time: $O(F E \log(V))$ where F is max flow. $O(VE)$ for setpi.
  */
 #pragma once
 
 // #include <bits/extc++.h> /// include-line, keep-include
 
 const ll INF = numeric_limits<ll>::max() / 4;
-typedef vector<ll> VL;
 
 struct MCMF {
-	int N;
-	vector<vi> adj;
 	struct edge {
-		int dest;
-		ll cap, cost;
+		int from, to, rev;
+		ll cap, cost, flow;
 	};
-	vector<edge> edges;
- 
-	VL pi, dist;
-	vi prv, vis;
-	__gnu_pbds::priority_queue<pair<ll, int>> q;
-	vector<typename decltype(q)::point_iterator> its;
- 
-	MCMF(int N) : N(N), adj(N), pi(N, 0), prv(N), vis(N) {}
- 
+	int N;
+	vector<vector<edge>> ed;
+	vi seen;
+	vector<ll> dist, pi;
+	vector<edge*> par;
+
+	MCMF(int N) : N(N), ed(N), seen(N), dist(N), pi(N), par(N) {}
+
 	void addEdge(int from, int to, ll cap, ll cost) {
-		int e = int(edges.size());
-		edges.emplace_back(edge{to, cap, cost});
-		edges.emplace_back(edge{from, 0, -cost});
-		adj[from].push_back(e);
-		adj[to].push_back(e+1);
-	}
- 
-	void path(int s) {
-		dist.assign(N, INF);
-		dist[s] = 0;
- 
-		its.assign(N, q.end());
-		its[s] = q.push({0, s});
- 
-		while (!q.empty()) {
-			int i = q.top().second; q.pop();
-			ll d = dist[i];
-			for (int e : adj[i]) {
-				if (edges[e].cap) {
-					int j = edges[e].dest;
-					ll nd = d + edges[e].cost;
-					if (nd < dist[j]) {
-						dist[j] = nd;
-						prv[j] = e;
-						if (its[j] == q.end()) {
-							its[j] = q.push({-(dist[j] - pi[j]), j});
-						} else {
-							q.modify(its[j], {-(dist[j] - pi[j]), j});
-						}
-					}
-				}
-			}
-		}
- 
-		swap(pi, dist);
-	}
- 
-	pair<ll, ll> maxflow(int s, int t) {
-		ll totFlow = 0, totCost = 0;
-		while (path(s), pi[t] < INF) {
-			ll fl = INF;
-			for (int cur = t; cur != s; ) {
-				int e = prv[cur], nxt = edges[e^1].dest;
-				fl = min(fl, edges[e].cap);
-				cur = nxt;
-			}
-			totFlow += fl; totCost += pi[t] * fl;
-			for (int cur = t; cur != s; ) {
-				int e = prv[cur], nxt = edges[e^1].dest;
-				edges[e].cap -= fl;
-				edges[e^1].cap += fl;
-				cur = nxt;
-			}
-		}
-		return {totFlow, totCost};
+		if (from == to) return;
+		ed[from].push_back(edge{ from,to,sz(ed[to]),cap,cost,0 });
+		ed[to].push_back(edge{ to,from,sz(ed[from])-1,0,-cost,0 });
 	}
 
-/*
-	// SPFA if the graph is dense
 	void path(int s) {
-		dist.assign(N, INF); dist[s] = 0;
-		queue<int> q;
-		for (q.push(s); !q.empty(); q.pop()) {
-			int i = q.front(); vis[i] = 0;
-			ll d = dist[i];
-			for (int e : adj[i]) {
-				if (edges[e].cap) {
-					int j = edges[e].dest;
-					ll nd = d + edges[e].cost;
-					if (nd < dist[j]) {
-						dist[j] = nd;
-						prv[j] = e;
-						if (!vis[j]) {
-							vis[j] = 1; q.push(j);
-						}
-					}
+		fill(all(seen), 0);
+		fill(all(dist), INF);
+		dist[s] = 0; ll di;
+
+		__gnu_pbds::priority_queue<pair<ll, int>> q;
+		vector<decltype(q)::point_iterator> its(N);
+		q.push({ 0, s });
+
+		while (!q.empty()) {
+			s = q.top().second; q.pop();
+			seen[s] = 1; di = dist[s] + pi[s];
+			for (edge& e : ed[s]) if (!seen[e.to]) {
+				ll val = di - pi[e.to] + e.cost;
+				if (e.cap - e.flow > 0 && val < dist[e.to]) {
+					dist[e.to] = val;
+					par[e.to] = &e;
+					if (its[e.to] == q.end())
+						its[e.to] = q.push({ -dist[e.to], e.to });
+					else
+						q.modify(its[e.to], { -dist[e.to], e.to });
 				}
 			}
 		}
-		swap(pi, dist);
+		rep(i,0,N) pi[i] = min(pi[i] + dist[i], INF);
 	}
-*/
+
+	pair<ll, ll> maxflow(int s, int t) {
+		ll totflow = 0, totcost = 0;
+		while (path(s), seen[t]) {
+			ll fl = INF;
+			for (edge* x = par[t]; x; x = par[x->from])
+				fl = min(fl, x->cap - x->flow);
+
+			totflow += fl;
+			for (edge* x = par[t]; x; x = par[x->from]) {
+				x->flow += fl;
+				ed[x->to][x->rev].flow -= fl;
+			}
+		}
+		rep(i,0,N) for(edge& e : ed[i]) totcost += e.cost * e.flow;
+		return {totflow, totcost/2};
+	}
 
 	// If some costs can be negative, call this before maxflow:
 	void setpi(int s) { // (otherwise, leave this out)
@@ -119,9 +83,9 @@ struct MCMF {
 		int it = N, ch = 1; ll v;
 		while (ch-- && it--)
 			rep(i,0,N) if (pi[i] != INF)
-				for (int e : adj[i]) if (auto [to, cap, cost] = edges[e]; cap)
-					if ((v = pi[i] + edges[e].cost) < pi[to])
-						pi[to] = v, ch = 1;
+			  for (edge& e : ed[i]) if (e.cap)
+				  if ((v = pi[i] + e.cost) < pi[e.to])
+					  pi[e.to] = v, ch = 1;
 		assert(it >= 0); // negative cost cycle
 	}
 };
