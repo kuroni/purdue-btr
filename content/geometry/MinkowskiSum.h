@@ -4,7 +4,7 @@
  * Source: me
  * Description: Minkowski sum of set of convex ccw polygons.
  * Time: $O(P \log N)$, where $P$ is number of points and $N$ is number of polygons.
- * Status: Tested probably
+ * Status: Tested on wf21:K, cf:87E.
  */
 #pragma once
 
