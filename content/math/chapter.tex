@@ -174,3 +174,38 @@ $\lim_{k\rightarrow\infty}\mathbf{P}^k = \mathbf{1}\pi$.
 A Markov chain is an A-chain if the states can be partitioned into two sets $\mathbf{A}$ and $\mathbf{G}$, such that all states in $\mathbf{A}$ are absorbing ($p_{ii}=1$), and all states in $\mathbf{G}$ leads to an absorbing state in $\mathbf{A}$.
 The probability for absorption in state $i\in\mathbf{A}$, when the initial state is $j$, is $a_{ij} = p_{ij}+\sum_{k\in\mathbf{G}} a_{ik}p_{kj}$.
 The expected time until absorption, when the initial state is $i$, is $t_i = 1+\sum_{k\in\mathbf{G}}p_{ki}t_k$.
+
+\section{Linear Programming}
+
+\begin{center}
+    \begin{tabular}{c|c}
+        primal (max) & dual (min) \\
+        \hline
+        constraint $i$ $\leq$ & variable $i$ $\geq 0$ \\
+        constraint $i$ $\geq$ & variable $i$ $\leq 0$ \\
+        constraint $i$ $=$ & variable $i$ $\in \mathbb{R}$ \\
+        variable $j$ $\geq 0$ & constraint $j$ $\geq$ \\
+        variable $j$ $\leq 0$ & constraint $j$ $\leq$ \\
+        variable $j$ $\in \mathbb{R}$ & constraint $j$ $=$
+    \end{tabular}
+\end{center}
+
+The max flow LP looks like
+
+\begin{align*}
+    \text{maximize } & \sum_{(s,i)\in E} x_{s,i}, \\
+    \text{with } & x_{u,v} \geq 0 \text{ for } (u,v)\in E, \\
+    \text{such that } & x_{u,v} \leq c_{u,v} \text{ for } (u,v)\in E, \\
+    & \sum_{(i,v) \in E} x_{i,v} - \sum_{(v,i) \in E} x_{v,i} = 0 \text{ for } v \in V\backslash \{s,t\}.
+\end{align*}
+
+The min cut dual LP looks like
+
+\begin{align*}
+    \text{minimize } & \sum_{(u,v)\in E} {c_{u,v}}y_{u,v}, \\
+    \text{with } & y_{u,v} \geq 0 \text{ for } (u,v)\in E, \\
+    & y_v \in \mathbb{R} \text{ for } v\in V, \\
+    \text{such that } & y_{u,v} + y_v - y_u \geq 0 \text{ for } (u,v)\in E, u\neq s, v\neq t, \\
+    & y_{s,v} + y_v \geq 1 \text{ for } (s,v)\in E, \\
+    & y_{u,t} - y_u \geq 0 \text{ for } (u,t)\in E.
+\end{align*}
